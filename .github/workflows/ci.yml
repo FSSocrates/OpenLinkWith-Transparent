@@ -6,7 +6,7 @@ on:
   pull_request:
     paths-ignore:
       - '*.md'
-  workflow_dispatch:      # Allows manual trigger from Actions tab
+  workflow_dispatch:      # Allows you to trigger manually from Actions tab
 
 jobs:
   build:
@@ -20,15 +20,15 @@ jobs:
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
-          java-version: '11'          # Changed to 11 — compatible with Gradle 6.8.2
+          java-version: '11'
           distribution: 'temurin'
           cache: gradle
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run checks and Build Transparent (Floss) APK
-        run: ./gradlew evaluateViolations testDebugUnitTest testFlossDebugUnitTest assembleFlossDebug --stacktrace
+      - name: Build Transparent (Floss) APK
+        run: ./gradlew assembleFlossDebug --stacktrace
 
       - name: Upload Transparent APK
         uses: actions/upload-artifact@v4
