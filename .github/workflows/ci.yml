@@ -12,15 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: gradle/wrapper-validation-action@v1
-      - name: Cache gradle
-        uses: actions/cache@v1
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+      - uses: actions/checkout@v4
 
-      - name: Run checks
-        run: ./gradlew evaluateViolations testDebugUnitTest testFlossDebugUnitTest -s
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run checks and Build APK
+        # We added 'assembleFlossDebug' to specifically build the FLOSS version you use
+        run: ./gradlew evaluateViolations testDebugUnitTest testFlossDebugUnitTest assembleFlossDebug -s
+
+      - name: Upload Transparent APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenLinkWith-Transparent-Build
+          # This wildcard path finds the APK regardless of which module it's in
+          path: "**/build/outputs/apk/**/*.apk"
