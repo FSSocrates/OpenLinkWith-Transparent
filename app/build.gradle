@@ -6,7 +6,17 @@ buildProperties {
   signing.using(configFile('release.signing')) | configFile('debug.signing')
 }
 
-def gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
+// Safe git SHA - won't crash the build if git command fails (common on mobile, shallow clones, or permission issues)
+def gitSha = 'unknown'
+try {
+    def proc = 'git rev-parse --short HEAD'.execute([], project.rootDir)
+    gitSha = proc.text.trim()
+    if (proc.exitValue() != 0) {
+        gitSha = 'unknown'
+    }
+} catch (Throwable ignored) {
+    gitSha = 'unknown'
+}
 
 android {
   defaultConfig {
