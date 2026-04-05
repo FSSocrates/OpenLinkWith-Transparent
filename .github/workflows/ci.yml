@@ -6,6 +6,7 @@ on:
   pull_request:
     paths-ignore:
       - '*.md'
+  workflow_dispatch:     # ← Add this so you can trigger it manually from Actions tab
 
 jobs:
   build:
@@ -13,6 +14,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # ← Important: Ensures git rev-parse works (for GIT_SHA)
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -24,13 +27,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run checks and Build APK
-        # We added 'assembleFlossDebug' to specifically build the FLOSS version you use
-        run: ./gradlew evaluateViolations testDebugUnitTest testFlossDebugUnitTest assembleFlossDebug -s
+      - name: Run checks and Build Transparent (Floss) APK
+        run: ./gradlew evaluateViolations testDebugUnitTest testFlossDebugUnitTest assembleFlossDebug --stacktrace
 
       - name: Upload Transparent APK
         uses: actions/upload-artifact@v4
         with:
-          name: OpenLinkWith-Transparent-Build
-          # This wildcard path finds the APK regardless of which module it's in
-          path: "**/build/outputs/apk/**/*.apk"
+          name: OpenLinkWith-Transparent-APK
+          path: app/build/outputs/apk/floss/debug/app-floss-debug.apk
+          if-no-files-found: error     # ← Fail clearly if APK is missing
